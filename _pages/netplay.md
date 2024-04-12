@@ -18,6 +18,12 @@ authors:
   - name: Jeremy Gow
     affiliations:
       name: Queen Mary University of London
+  - name: Duygu Cakmak
+    affiliations:
+      name: Creative Assembly
+  - name: James Kwan
+    affiliations:
+      name: Creative Assembly
 
 toc:
   - name: Overview
@@ -25,11 +31,15 @@ toc:
   - name: NetPlay
   - name: Experiments - Full Runs
   - name: Experiments - Scenarios
+  - name: Discussion
   - name: References
 
 _styles: >
   figure {
     margin: 0 0 0 0;
+  },
+  .d-byline .byline {
+    grid-template-columns: auto auto auto auto;
   }
 ---
 
@@ -107,27 +117,38 @@ The remaining skills are thin wrappers around NetHack commands, such as <i>drink
 ## Experiments - Full Runs
 
 ## Experiments - Scenarios
-<div class="row mt-3">
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
+After conducting the full runs, we hypothesized that although NetPlay can be creative and interact with most mechanics in the game, it tends to fixate on the most straightforward approach for a given task. To confirm this hypothesis, we tested NetPlay in various small-scale scenarios.
+
+<div class="fake-img l-page">
+{% include video.liquid path="assets/video/instruction_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
 </div>
-<div class="row mt-3">
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
+<div class="caption">
+    <b>Instruction scenarios</b> tested the agent's ability to follow instructions. These scenarios show that NetPlay can easily follow detailed instructions. However, the <i>conditional</i> scenario highlights the agent's tendency to fixate too much on solving the instructions as quickly as possible without considering if there is something else it has to do first.
 </div>
 
-Showcase how NetPlay behaves in different scenarios, what it struggles with, and what we learned in the paper.
+<div class="fake-img l-page">
+{% include video.liquid path="assets/video/game_mechanic_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
+</div>
+<div class="caption">
+    <b>Game mechanic scenarios</b> tested the agent's ability to interact with some mechanics in the game.
+    Although the agent shows that it understands the mechanics, it often tends to get confused.
+    These issues can be resolved by providing more detailed instructions.
+</div>
+
+<div class="fake-img l-page">
+{% include video.liquid path="assets/video/scenarios_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
+</div>
+<div class="caption">
+    <b>Creative scenarios</b> tested the agent's ability to solve a given problem.
+    These scenarios highlight how NetPlay is often unreliable unless we provide detailed instructions.
+</div>
+
+## Discussion
+Our experiments show that despite the immense complexity of NetHack, the agent can fulfill a wide range of tasks given enough context information. To our knowledge, this is the first NetHack agent to exhibit such flexible behavior. However, the benefits of the presented approach diminish the more ambiguous a given task is, making tasks such as "Win the Game" impossible.
+
+A promising use case of the presented architecture is regression testing during game development. Game developers could test specific aspects of their game by providing NetPlay with detailed instructions on what to test. This approach could not only streamline the testing process but also benefit from NetPlay's flexibility, enabling the tests to adapt dynamically as the game evolves.
+
+Given NetPlay's proficiency when given detailed context information, an obvious extension to our approach would be granting the agent access to the NetHack Wikipedia. This could be done using a skill that accepts a query and adds the resulting information to the agent's short-term memory. While this can improve the results at the cost of more LLM calls, finding the most relevant information for a given situation is tricky. Instead, we recommend investing future research into automated methods for finding relevant context information, with a particular focus on finding the most successful past interactions as guidelines on how to play. 
+
+A significant limitation of our approach lies in the predefined skills and observation descriptions, which struggle to encompass NetHack's vast complexity. Designing the agent to handle all potential edge cases proved challenging, as it is difficult to anticipate every scenario. 
+While the premise of this approach is that the LLM can handle these edge cases, this is only true as long as we have a comprehensive description of the environment and flexible skills. In practice, achieving such a well-designed agent requires an ever-growing repertoire of skills and an observation description that grows infinitely. As such, another promising research direction is to use machine learning to replace the handcrafted components of the agent.
