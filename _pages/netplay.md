@@ -2,7 +2,7 @@
 layout: distill
 title: NetPlay
 tags: nethack llm zero-shot game-playing
-date: 2024-04-04
+date: 2024-04-15
 permalink: /netplay/
 classes: wide
 
@@ -34,19 +34,36 @@ toc:
   - name: Discussion
   - name: References
 
+description:
+
 _styles: >
   figure {
     margin: 0 0 0 0;
-  },
-  .d-byline .byline {
-    grid-template-columns: auto auto auto auto;
   }
----
 
-<div class="row mt-3">
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dummy_600_400.png" class="img-fluid rounded z-depth-1" %}
-    </div>
+  .mybutton {
+    display: inline-block;
+    padding: 5px 15px;
+    background-color: #333; /* Paler background color */
+    color: white !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 30px; /* Increased border-radius for more rounded sides */
+    font-weight: bold; /* Making the text bold */
+    transition: background-color 0.3s ease; /* Smooth transition */
+  }
+
+  .mybutton:hover {
+    background-color: #000;
+    border-bottom-color: none !important;
+    color: white !important;
+    border-bottom: none !important;
+  }
+
+
+---
+<div>
+    {% include video.liquid path="assets/video/netplay_showcase.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=true loop=true %}
 </div>
 
 ## Overview
@@ -115,19 +132,36 @@ To indicate when the agent is done with a given task, it has access to the
 The remaining skills are thin wrappers around NetHack commands, such as <i>drink</i> or <i>pickup</i>. However, these commands often involve multiple steps, such as confirming which item to drink or positioning the agent correctly to pick up an item. Consequently, the LLM often assumed that the <i>drink</i> command accepts an item parameter or that <i>pickup</i> works seamlessly regardless of the agent's current position. To mitigate these issues, most command-skills automate some aspects to make the skills more intuitive for the LLM.
 
 ## Experiments - Full Runs
+We started evaluating NetPlay by letting it play NetHack without any constraints and tasking it to win the game. We refer to this agent as the <i>unguided agent</i>. We conducted 20 runs with the unguided agent. Additionally, we performed 100 runs, each with <i>autoascend</i><d-cite key="autoascend"></d-cite> and a much simpler <i>handcrafted agent</i> for comparison. After evaluating the unguided agent, we carried out an additional ten runs employing a <i>guided agent</i> who was informed on how to play better.
+
+| Metric  | unguided agent | guided agent | autoascend | handcrafted |
+|---------|-------------------------|------------------------|------------|-------------|
+| Score   | 284.85 ± 222.10         | 405.00 ± 216.38        | **11341.94 ± 11625.39** | 250.24 ± 159.17 |
+| Depth   | 2.60 ± 1.39             | 2.00 ± 1.05            | **4.01 ± 3.04**         | 2.35 ± 0.93 |
+| Level   | 2.40 ± 1.23             | 3.30 ± 0.95            | **3.34 ± 7.69**         | 2.39 ± 1.05 |
+| Time    | 1292.10 ± 942.74        | 2627.40 ± 1545.12      | **21169.81 ± 9155.59** | 1306 ± 924.17 |
+
+
+The results show that autoascend far outperforms NetPlay. While NetPlay beat the handcrafted agent by a small margin, it is likely that with a few tweaks the handcrafted agent can also outperform NetPlay.
+
+The unguided agent primarily failed due to timeouts, followed by deaths caused by eating rotten corpses, fighting with low health, or being overwhelmed by enemies. Many timeouts were caused by the agent attempting to move past friendly monsters, such as a shopkeeper. By default, bumping into monsters attacks them, but for passive monsters, the game prompts the player before initiating an attack. The agent's refusal to attack these monsters often leads to a loop of canceling the prompt and moving, resulting in eventual timeouts. A similar loop took place when the agent attempted to pick up an item with a generic name on the map but a detailed name in the game's menu. This confusion led the agent to repeatedly close and reopen the menu, unable to locate the desired item.
+
+Based on the results of the unguided agent, we constructed a guide that included strategies from autoascend, such as staying on the first two dungeon levels until reaching experience level 8, consuming only freshly slain corpses to avoid eating rotten ones, and leveraging altars to acquire items. Furthermore, we provided tips for common mistakes by the unguided agent, such as avoiding getting stuck behind passive monsters and informing the agent about the time limit to avoid timeouts.
+
+The guided agent often managed to stay alive longer by consuming freshly killed corpses and praying when hungry or at low health. Its causes of death have been a mixture of timeouts, starvation, and dying in combat. Most of the timeouts stemmed from a bug with our tracker, which fails to detect when an object disappears while being obscured by a monster. For example, the agent repeatedly attempted to pick up a dagger already taken by its pet due to the tracker's misleading observation. Despite receiving game messages indicating the absence of the item, the agent failed to recognize the situation accurately.
 
 ## Experiments - Scenarios
 After conducting the full runs, we hypothesized that although NetPlay can be creative and interact with most mechanics in the game, it tends to fixate on the most straightforward approach for a given task. To confirm this hypothesis, we tested NetPlay in various small-scale scenarios.
 
 <div class="fake-img l-page">
-{% include video.liquid path="assets/video/instruction_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
+    {% include video.liquid path="assets/video/instruction_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
 </div>
 <div class="caption">
     <b>Instruction scenarios</b> tested the agent's ability to follow instructions. These scenarios show that NetPlay can easily follow detailed instructions. However, the <i>conditional</i> scenario highlights the agent's tendency to fixate too much on solving the instructions as quickly as possible without considering if there is something else it has to do first.
 </div>
 
 <div class="fake-img l-page">
-{% include video.liquid path="assets/video/game_mechanic_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
+    {% include video.liquid path="assets/video/game_mechanic_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
 </div>
 <div class="caption">
     <b>Game mechanic scenarios</b> tested the agent's ability to interact with some mechanics in the game.
@@ -136,7 +170,7 @@ After conducting the full runs, we hypothesized that although NetPlay can be cre
 </div>
 
 <div class="fake-img l-page">
-{% include video.liquid path="assets/video/scenarios_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
+    {% include video.liquid path="assets/video/scenarios_clips.mp4" class="img-fluid rounded z-depth-1" controls=true autoplay=false %}
 </div>
 <div class="caption">
     <b>Creative scenarios</b> tested the agent's ability to solve a given problem.

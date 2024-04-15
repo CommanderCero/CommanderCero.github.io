@@ -72,7 +72,13 @@
     <div class="post distill">
       <d-title>
         <h1>{{ page.title }}</h1>
-        <p>{{ page.description }}</p>
+        <p class="centered-buttons">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+          <a href="https://arxiv.org/abs/2403.00690" class="mybutton"><i class="fa fa-file-text-o"></i> ArXiv</a>
+          <a href="https://github.com/CommanderCero/NetPlay" class="mybutton"><i class="fa fa-github"></i> GitHub</a>
+          <a href="https://www.linkedin.com/in/dominik-jeurissen/" class="mybutton"><i class="fa fa-linkedin"></i> LinkedIn</a>
+          <!--<a href="/path/to/your/pdf.pdf" class="mybutton"><i class="fa fa-file-pdf-o"></i> PDF</a>-->
+        </p>
       </d-title>
       {% if page.authors %}
         <d-byline></d-byline>
